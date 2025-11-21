@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { View, Text, ScrollView, Image, ActivityIndicator, StyleSheet } from "react-native";
+import HeroMovie from "../destaques/Filme_principal";
 
 type Filme = {
   id: number;
   title: string;
   poster_path?: string;
+  backdrop_path?: string;
 };
 
 export default function TesteFilmes() {
@@ -34,8 +36,8 @@ export default function TesteFilmes() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.titulo}> Filmes Populares</Text>
-
+      <Text style={styles.titulo}>Filmes Populares</Text>
+      {filmes.length > 0 && <HeroMovie movie={filmes[0]} />}
       {filmes.map((f) => (
         <View key={f.id} style={styles.card}>
           {f.poster_path ? (
