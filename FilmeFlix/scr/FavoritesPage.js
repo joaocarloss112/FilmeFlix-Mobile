@@ -1,17 +1,16 @@
-// app/src/FavoritesPage.tsx
 import { useEffect, useState } from "react";
 import { View, Text, Image, FlatList, TouchableOpacity, Alert, StyleSheet } from "react-native";
-import { getFavorites } from "../lib/favoritos";
+import { getFavorites } from "../lib/favoritos"; 
 import Parse from "../lib/parse";
 
 export default function FavoritesPage({ navigation }) {
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!Parse.User.current()) {
       Alert.alert("Atenção", "Você precisa estar logado para ver os favoritos.");
-      navigation.navigate("Home"); // navegação para a tela inicial
+      navigation.navigate("Home");
       return;
     }
 
@@ -20,6 +19,7 @@ export default function FavoritesPage({ navigation }) {
       setFavorites(favs);
       setLoading(false);
     }
+
     loadFavorites();
   }, []);
 
@@ -62,31 +62,9 @@ export default function FavoritesPage({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  list: {
-    padding: 10,
-    justifyContent: "space-between",
-  },
-  card: {
-    flex: 1,
-    margin: 5,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    alignItems: "center",
-    padding: 5,
-  },
-  image: {
-    width: 150,
-    height: 225,
-    borderRadius: 5,
-  },
-  title: {
-    marginTop: 5,
-    textAlign: "center",
-  },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  list: { padding: 10, justifyContent: "space-between" },
+  card: { flex: 1, margin: 5, borderWidth: 1, borderColor: "#ddd", borderRadius: 8, alignItems: "center", padding: 5 },
+  image: { width: 150, height: 225, borderRadius: 5 },
+  title: { marginTop: 5, textAlign: "center" },
 });

@@ -1,13 +1,11 @@
-// app/src/MoviePage.tsx
 import { useEffect, useState } from "react";
 import { View, Text, Image, ScrollView, StyleSheet } from "react-native";
 import { getMovieDetails, getMovieWatchProviders } from "../lib/tmdb";
-import SaveButton from "../components/SaveButton";
 
 export default function MoviePage({ route }) {
   const { id } = route.params;
-  const [movie, setMovie] = useState<any>(null);
-  const [providers, setProviders] = useState<any>(null);
+  const [movie, setMovie] = useState(null);
+  const [providers, setProviders] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +16,7 @@ export default function MoviePage({ route }) {
       setProviders(providersData);
       setLoading(false);
     }
+
     loadMovie();
   }, [id]);
 
@@ -47,14 +46,10 @@ export default function MoviePage({ route }) {
       <Text style={styles.overview}>{movie.overview}</Text>
       <Text>⭐ {movie.vote_average}</Text>
 
-      {/* Botão de salvar favorito */}
-      <SaveButton movie={movie} />
-
-      {/* Onde assistir */}
       {providers?.flatrate ? (
         <View style={styles.providers}>
           <Text style={styles.subTitle}>Onde assistir:</Text>
-          {providers.flatrate.map((provider: any) => (
+          {providers.flatrate.map((provider) => (
             <View key={provider.provider_id} style={styles.provider}>
               <Image
                 source={{ uri: `https://image.tmdb.org/t/p/original${provider.logo_path}` }}
@@ -68,11 +63,9 @@ export default function MoviePage({ route }) {
         <Text>Informação de onde assistir não disponível.</Text>
       )}
 
-      {/* Trailer simplificado */}
       {movie.trailerKey ? (
         <View style={styles.trailer}>
           <Text style={styles.subTitle}>Trailer Oficial</Text>
-          {/* Se quiser reproduzir vídeo, use expo-av */}
         </View>
       ) : (
         <Text style={{ marginTop: 10 }}>Trailer não disponível.</Text>
