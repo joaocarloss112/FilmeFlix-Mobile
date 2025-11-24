@@ -30,59 +30,34 @@ export default function Home() {
           getMoviesByCategory("top_rated", 1),
           getMoviesByCategory("upcoming", 1),
         ]);
+
         setPopular(pop || []);
         setNowPlaying(now || []);
         setTopRated(top || []);
         setUpcoming(up || []);
         const allGenres = await getGenres();
         setGenres(allGenres || []);
-        const preferred = [
-          ["ação", "action"],
-          ["comédia", "comedy"],
-          ["ficção científica", "science fiction", "sci-fi", "science_fiction"],
-          ["drama"],
-          ["terror", "horror"],
-          ["romance"],
-          ["fantasia", "fantasy"],
-          ["animação", "animation"],
-          ["crime"],
-          ["thriller"]
-        ];
+        const MIN_MOVIES = 40;
+        const RESULTS_PER_PAGE = 20; 
+        const pagesNeeded = Math.ceil(MIN_MOVIES / RESULTS_PER_PAGE);
 
-        const MAX_GENRES = 10;
-        const MIN_MOVIES_PER_GENRE = 30;
-        const RESULTS_PER_PAGE = 40;
-        const pagesForGenre = Math.ceil(MIN_MOVIES_PER_GENRE / RESULTS_PER_PAGE);
-        const lowerGenres = (allGenres || []).map((g: any) => ({ id: g.id, name: String(g.name) }));
-        const selected: { id: number; name: string }[] = [];
-
-        for (const opts of preferred) {
-          if (selected.length >= MAX_GENRES) break;
-          for (const nameTry of opts) {
-            const found = lowerGenres.find((lg: { id: number; name: string }) =>
-              lg.name.toLowerCase().includes(nameTry.toLowerCase())
-            );
-            if (found && !selected.some((s) => s.id === found.id)) {
-              selected.push(found);
-              break;
-            }
-          }
-        }
-        for (const g of lowerGenres) {
-          if (selected.length >= MAX_GENRES) break;
-          if (!selected.some((s) => s.id === g.id)) selected.push(g);
-        }
-
-        const genrePromises = selected.map((g: { id: number; name: string }) =>
-          getMoviesByGenre(g.id, pagesForGenre).then((movies) => ({ id: g.id, movies }))
+        const genrePromises = (allGenres || []).map((g: any) =>
+          getMoviesByGenre(g.id, pagesNeeded).then((movies) => ({
+            id: g.id,
+            movies: movies.slice(0, MIN_MOVIES), 
+          }))
         );
 
         const genreResults = await Promise.all(genrePromises);
         const mapping: Record<number, Filme[]> = {};
-        genreResults.forEach((r) => (mapping[r.id] = r.movies || []));
+
+        genreResults.forEach((r) => {
+          mapping[r.id] = r.movies;
+        });
+
         setGenreMovies(mapping);
       } catch (err) {
-        console.error("Erroo ao carregar filmes:", err);
+        console.error("Erro ao carregar filmes:", err);
       } finally {
         setLoading(false);
       }
@@ -115,6 +90,14 @@ export default function Home() {
 
       <Text style={styles.sectionTitle}>Próximos lançamentos</Text>
       <MovieRow movies={upcoming} />
+      {genres.map((g) =>
+        genreMovies[g.id] && genreMovies[g.id].length > 0 ? (
+          <View key={g.id}>
+            <Text style={styles.sectionTitle}>{g.name}</Text>
+            <MovieRow movies={genreMovies[g.id]} />
+          </View>
+        ) : null
+      )}
     </ScrollView>
   );
 }
