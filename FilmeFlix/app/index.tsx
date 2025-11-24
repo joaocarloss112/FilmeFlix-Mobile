@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, Image, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import HeroMovie from "../destaques/Filme_principal";
+import MovieRow from "../destaques/MovieRow";
+import { getMoviesByCategory } from "../lib/tmdb";
 
 type Filme = {
   id: number;
@@ -9,21 +11,36 @@ type Filme = {
   backdrop_path?: string;
 };
 
-export default function TesteFilmes() {
-  const [filmes, setFilmes] = useState<Filme[]>([]);
+export default function Home() {
+  const [popular, setPopular] = useState<Filme[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<Filme[]>([]);
+  const [topRated, setTopRated] = useState<Filme[]>([]);
+  const [upcoming, setUpcoming] = useState<Filme[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function carregar() {
-      const resp = await fetch(
-        "https://api.themoviedb.org/3/movie/popular?api_key=3541c74b87a9455552fa5ae4c33578bd&language=pt-BR"
-      );
-      const json = await resp.json();
-      setFilmes(json.results);
-      setLoading(false);
+    async function load() {
+      setLoading(true);
+      try {
+        const [pop, now, top, up] = await Promise.all([
+          getMoviesByCategory("popular", 1),
+          getMoviesByCategory("now_playing", 1),
+          getMoviesByCategory("top_rated", 1),
+          getMoviesByCategory("upcoming", 1),
+        ]);
+
+        setPopular(pop || []);
+        setNowPlaying(now || []);
+        setTopRated(top || []);
+        setUpcoming(up || []);
+      } catch (err) {
+        console.error("Erro ao carregar filmes:", err);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    carregar();
+    load();
   }, []);
 
   if (loading) {
@@ -37,25 +54,19 @@ export default function TesteFilmes() {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.titulo}>Filmes Populares</Text>
-      {filmes.length > 0 && <HeroMovie movie={filmes[0]} />}
-      {filmes.map((f) => (
-        <View key={f.id} style={styles.card}>
-          {f.poster_path ? (
-            <Image
-              source={{
-                uri: `https://image.tmdb.org/t/p/w500${f.poster_path}`,
-              }}
-              style={styles.poster}
-            />
-          ) : (
-            <View style={styles.semImagem}>
-              <Text style={{ color: "#fff" }}>Sem imagem</Text>
-            </View>
-          )}
+      {popular.length > 0 && <HeroMovie movie={popular[0]} />}
 
-          <Text style={styles.nome}>{f.title}</Text>
-        </View>
-      ))}
+      <Text style={styles.sectionTitle}>Popular</Text>
+      <MovieRow movies={popular} />
+
+      <Text style={styles.sectionTitle}>Em exibição</Text>
+      <MovieRow movies={nowPlaying} />
+
+      <Text style={styles.sectionTitle}>Mais bem avaliados</Text>
+      <MovieRow movies={topRated} />
+
+      <Text style={styles.sectionTitle}>Próximos lançamentos</Text>
+      <MovieRow movies={upcoming} />
     </ScrollView>
   );
 }
@@ -74,29 +85,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: "bold",
   },
-  card: {
-    marginBottom: 30,
-    alignItems: "center",
-  },
-  poster: {
-    width: 200,
-    height: 300,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  semImagem: {
-    width: 200,
-    height: 300,
-    borderRadius: 10,
-    backgroundColor: "#333",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  nome: {
+  sectionTitle: {
     color: "#fff",
-    fontSize: 18,
-    textAlign: "center",
-    width: 200,
+    fontSize: 20,
+    marginTop: 16,
+    marginBottom: 8,
+    fontWeight: "600",
   },
 });

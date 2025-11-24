@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { TouchableOpacity, Text, StyleSheet, Alert } from "react-native";
-import { saveFavorite, getFavorites, removeFavorite } from "../lib/favoritos";
+import { saveFavorite, getFavorites, removeFavorite, FavoriteMovie } from "../lib/favorito";
 
 interface SaveButtonProps {
   movie: { id: number; title: string };
@@ -13,8 +13,8 @@ export default function SaveButton({ movie }: SaveButtonProps) {
 
   useEffect(() => {
     async function checkIfSaved() {
-      const favoritos = await getFavorites();
-      const jaExiste = favoritos.some(fav => fav.id === movie.id);
+      const favoritos: FavoriteMovie[] = await getFavorites();
+      const jaExiste = favoritos.some((fav) => fav.id === movie.id);
       setSaved(jaExiste);
       setLoading(false);
     }

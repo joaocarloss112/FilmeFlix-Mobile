@@ -1,24 +1,27 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { View, ScrollView, TouchableOpacity, Text, StyleSheet } from "react-native";
 import MovieCard from "./MovieCard";
 
-export default function MovieRow({ movies }) {
-  const rowRef = useRef(null);
+export default function MovieRow({ movies }: { movies?: any[] | null }) {
+  const rowRef = useRef<any>(null);
+  const [offset, setOffset] = useState(0);
 
-  // Remove duplicados
-  const uniqueMovies = movies?.filter(
+  const uniqueMovies = (movies || []).filter(
     (movie, index, self) => index === self.findIndex((m) => m.id === movie.id)
   );
 
-  const scroll = (direction) => {
-    if (rowRef.current) {
-      rowRef.current.measure((x, y, width) => {
-        rowRef.current.scrollTo({
-          x: direction === "left" ? width * -1 : width,
-          animated: true,
-        });
-      });
-    }
+  const ITEM_WIDTH = 152;
+  
+  const VISIBLE_COUNT = 3; 
+
+  const scroll = (direction: "left" | "right") => {
+    if (!rowRef.current) return;
+
+    const distance = ITEM_WIDTH * VISIBLE_COUNT;
+    const newOffset = Math.max(0, offset + (direction === "left" ? -distance : distance));
+
+    rowRef.current.scrollTo({ x: newOffset, animated: true });
+    setOffset(newOffset);
   };
 
   return (
@@ -32,6 +35,8 @@ export default function MovieRow({ movies }) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.row}
+        onScroll={(e) => setOffset(e.nativeEvent.contentOffset.x)}
+        scrollEventThrottle={16}
       >
         {uniqueMovies.map((movie) => (
           <MovieCard key={movie.id} movie={movie} />

@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 
 export default function Navbar() {
-  const [user, setUser] = useState<Parse.User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -55,7 +55,7 @@ export default function Navbar() {
   function handleSearch() {
     if (!searchTerm.trim()) return;
 
-    router.push(`/pesquisa?query=${encodeURIComponent(searchTerm)}`);
+    router.push((`/pesquisa?query=${encodeURIComponent(searchTerm)}` as unknown) as any);
     setSearchTerm("");
   }
 
@@ -76,11 +76,11 @@ export default function Navbar() {
           FilmeFlix
         </Text>
 
-        <Pressable onPress={() => router.push("/")}>
+        <Pressable onPress={() => router.push(("/" as unknown) as any)}>
           <Text style={{ color: "white", fontSize: 16 }}>Home</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push("/favorites")}>
+        <Pressable onPress={() => router.push(("/favorites" as unknown) as any)}>
           <Text style={{ color: "white", fontSize: 16 }}>Favoritos</Text>
         </Pressable>
       </View>
