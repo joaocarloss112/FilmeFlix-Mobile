@@ -49,10 +49,6 @@ export async function getFavorites(): Promise<FavoriteMovie[]> {
   }
 }
 
-
-// ------------------------------------------------
-// Remover favorito
-// ------------------------------------------------
 export async function removeFavorite(movieId: number) {
   try {
     const user = Parse.User.current();

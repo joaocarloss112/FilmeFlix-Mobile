@@ -34,12 +34,8 @@ export default function Home() {
         setNowPlaying(now || []);
         setTopRated(top || []);
         setUpcoming(up || []);
-
-        // buscar gêneros e filmes por gênero
         const allGenres = await getGenres();
         setGenres(allGenres || []);
-
-        // preferência de gêneros (nomes em PT e EN para maior correspondência)
         const preferred = [
           ["ação", "action"],
           ["comédia", "comedy"],
@@ -55,10 +51,8 @@ export default function Home() {
 
         const MAX_GENRES = 10;
         const MIN_MOVIES_PER_GENRE = 30;
-        const RESULTS_PER_PAGE = 20; // TMDB usualmente retorna 20 por página
+        const RESULTS_PER_PAGE = 40;
         const pagesForGenre = Math.ceil(MIN_MOVIES_PER_GENRE / RESULTS_PER_PAGE);
-
-        // encontrar ids para os gêneros preferidos
         const lowerGenres = (allGenres || []).map((g: any) => ({ id: g.id, name: String(g.name) }));
         const selected: { id: number; name: string }[] = [];
 
@@ -74,8 +68,6 @@ export default function Home() {
             }
           }
         }
-
-        // se ainda faltar, preencha com os primeiros gêneros disponíveis
         for (const g of lowerGenres) {
           if (selected.length >= MAX_GENRES) break;
           if (!selected.some((s) => s.id === g.id)) selected.push(g);
