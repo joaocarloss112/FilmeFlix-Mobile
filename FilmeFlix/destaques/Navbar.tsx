@@ -1,61 +1,32 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, Alert } from "react-native";
-import Parse from "../lib/parse";
+import { View, Text, TextInput, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
+import { getCurrentUser, logout } from "../lib/auth";
 
 export default function Navbar() {
-  const [user, setUser] = useState<any | null>(null);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isRegister, setIsRegister] = useState(false);
-
-  const [searchTerm, setSearchTerm] = useState("");
-
   const router = useRouter();
 
+  const [user, setUser] = useState<any | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
-    setUser(Parse.User.current());
+    async function loadUser() {
+      const u = await getCurrentUser();
+      setUser(u);
+    }
+    loadUser();
   }, []);
 
-  async function handleLogin() {
-    try {
-      const logged = await Parse.User.logIn(username, password);
-      setUser(logged);
-      setUsername("");
-      setPassword("");
-      Alert.alert("Sucesso", "Login efetuado!");
-    } catch (err: any) {
-      Alert.alert("Erro", err.message);
-    }
-  }
-
-  async function handleRegister() {
-    try {
-      const newUser = new Parse.User();
-      newUser.set("username", username);
-      newUser.set("password", password);
-
-      await newUser.signUp();
-      setUser(newUser);
-      setUsername("");
-      setPassword("");
-
-      Alert.alert("Sucesso", "Conta criada!");
-    } catch (err: any) {
-      Alert.alert("Erro", err.message);
-    }
-  }
-
   async function handleLogout() {
-    await Parse.User.logOut();
+    await logout();
     setUser(null);
   }
 
   function handleSearch() {
     if (!searchTerm.trim()) return;
+    router.push({ pathname: "pesquisa", params: { query: searchTerm } } as any);
 
-    router.push((`/pesquisa?query=${encodeURIComponent(searchTerm)}` as unknown) as any);
     setSearchTerm("");
   }
 
@@ -70,22 +41,21 @@ export default function Navbar() {
         alignItems: "center",
       }}
     >
-      {/* LADO ESQUERDO */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
         <Text style={{ color: "#e50914", fontSize: 28, fontWeight: "bold" }}>
           FilmeFlix
         </Text>
 
-        <Pressable onPress={() => router.push(("/" as unknown) as any)}>
+        <Pressable onPress={() => router.push("/")}>
           <Text style={{ color: "white", fontSize: 16 }}>Home</Text>
         </Pressable>
 
-        <Pressable onPress={() => router.push(("/favorites" as unknown) as any)}>
-          <Text style={{ color: "white", fontSize: 16 }}>Favoritos</Text>
-        </Pressable>
+        {user && (
+          <Pressable onPress={() => router.push({ pathname: "favorites" } as any)}>
+            <Text style={{ color: "white", fontSize: 16 }}>Favoritos</Text>
+          </Pressable>
+        )}
       </View>
-
-      {/* BUSCA */}
       <View
         style={{
           flexDirection: "row",
@@ -109,85 +79,23 @@ export default function Navbar() {
           <FontAwesome name="search" size={18} color="white" />
         </Pressable>
       </View>
-
-      {/* LOGIN / USUÁRIO */}
-      <View>
-        {user ? (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Text style={{ color: "white" }}>👤 {user.get("username")}</Text>
-
-            <Pressable
-              onPress={handleLogout}
-              style={{
-                backgroundColor: "red",
-                borderRadius: 6,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-              }}
-            >
-              <Text style={{ color: "white" }}>Sair</Text>
-            </Pressable>
-          </View>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        {!user ? (
+          <Pressable onPress={() => router.push({ pathname: "login" } as any)}>
+            <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
+          </Pressable>
         ) : (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            {/* FORM LOGIN / REGISTRO */}
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              <TextInput
-                placeholder="Usuário"
-                placeholderTextColor="#aaa"
-                value={username}
-                onChangeText={setUsername}
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  backgroundColor: "#222",
-                  color: "white",
-                  borderRadius: 4,
-                }}
-              />
-
-              <TextInput
-                placeholder="Senha"
-                placeholderTextColor="#aaa"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                style={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  backgroundColor: "#222",
-                  color: "white",
-                  borderRadius: 4,
-                }}
-              />
-
-              <Pressable
-                onPress={isRegister ? handleRegister : handleLogin}
-                style={{
-                  backgroundColor: "#0070f3",
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 6,
-                }}
-              >
-                <Text style={{ color: "white" }}>
-                  {isRegister ? "Registrar" : "Entrar"}
-                </Text>
-              </Pressable>
-            </View>
-
-            <Pressable onPress={() => setIsRegister(!isRegister)}>
-              <Text
-                style={{
-                  color: "#fff",
-                  textDecorationLine: "underline",
-                  marginLeft: 6,
-                }}
-              >
-                {isRegister ? "Login" : "Registrar"}
-              </Text>
-            </Pressable>
-          </View>
+          <Pressable
+            onPress={handleLogout}
+            style={{
+              backgroundColor: "red",
+              borderRadius: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+            }}
+          >
+            <Text style={{ color: "white" }}>Sair</Text>
+          </Pressable>
         )}
       </View>
     </View>

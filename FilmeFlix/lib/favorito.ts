@@ -1,4 +1,4 @@
-import Parse from "./parse";
+import Parse from "/parse";
 
 export interface FavoriteMovie {
   id: number;
