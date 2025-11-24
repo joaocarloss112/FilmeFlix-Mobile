@@ -82,7 +82,7 @@ export default function Home() {
         genreResults.forEach((r) => (mapping[r.id] = r.movies || []));
         setGenreMovies(mapping);
       } catch (err) {
-        console.error("Erro ao carregar filmes:", err);
+        console.error("Erroo ao carregar filmes:", err);
       } finally {
         setLoading(false);
       }
