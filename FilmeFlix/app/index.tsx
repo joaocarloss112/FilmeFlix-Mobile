@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
 import HeroMovie from "../destaques/Filme_principal";
 import MovieRow from "../destaques/MovieRow";
-import { getMoviesByCategory } from "../lib/tmdb";
+import { getMoviesByCategory, getGenres, getMoviesByGenre } from "../lib/tmdb";
 
 type Filme = {
   id: number;
@@ -16,6 +16,8 @@ export default function Home() {
   const [nowPlaying, setNowPlaying] = useState<Filme[]>([]);
   const [topRated, setTopRated] = useState<Filme[]>([]);
   const [upcoming, setUpcoming] = useState<Filme[]>([]);
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [genreMovies, setGenreMovies] = useState<Record<number, Filme[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,11 +30,65 @@ export default function Home() {
           getMoviesByCategory("top_rated", 1),
           getMoviesByCategory("upcoming", 1),
         ]);
-
         setPopular(pop || []);
         setNowPlaying(now || []);
         setTopRated(top || []);
         setUpcoming(up || []);
+
+        // buscar gêneros e filmes por gênero
+        const allGenres = await getGenres();
+        setGenres(allGenres || []);
+
+        // preferência de gêneros (nomes em PT e EN para maior correspondência)
+        const preferred = [
+          ["ação", "action"],
+          ["comédia", "comedy"],
+          ["ficção científica", "science fiction", "sci-fi", "science_fiction"],
+          ["drama"],
+          ["terror", "horror"],
+          ["romance"],
+          ["fantasia", "fantasy"],
+          ["animação", "animation"],
+          ["crime"],
+          ["thriller"]
+        ];
+
+        const MAX_GENRES = 10;
+        const MIN_MOVIES_PER_GENRE = 30;
+        const RESULTS_PER_PAGE = 20; // TMDB usualmente retorna 20 por página
+        const pagesForGenre = Math.ceil(MIN_MOVIES_PER_GENRE / RESULTS_PER_PAGE);
+
+        // encontrar ids para os gêneros preferidos
+        const lowerGenres = (allGenres || []).map((g: any) => ({ id: g.id, name: String(g.name) }));
+        const selected: { id: number; name: string }[] = [];
+
+        for (const opts of preferred) {
+          if (selected.length >= MAX_GENRES) break;
+          for (const nameTry of opts) {
+            const found = lowerGenres.find((lg: { id: number; name: string }) =>
+              lg.name.toLowerCase().includes(nameTry.toLowerCase())
+            );
+            if (found && !selected.some((s) => s.id === found.id)) {
+              selected.push(found);
+              break;
+            }
+          }
+        }
+
+        // se ainda faltar, preencha com os primeiros gêneros disponíveis
+        for (const g of lowerGenres) {
+          if (selected.length >= MAX_GENRES) break;
+          if (!selected.some((s) => s.id === g.id)) selected.push(g);
+        }
+
+        const genrePromises = selected.map((g: { id: number; name: string }) =>
+          getMoviesByGenre(g.id, pagesForGenre).then((movies) => ({ id: g.id, movies }))
+        );
+
+        const genreResults = await Promise.all(genrePromises);
+        const mapping: Record<number, Filme[]> = {};
+        genreResults.forEach((r) => (mapping[r.id] = r.movies || []));
+        setGenreMovies(mapping);
       } catch (err) {
         console.error("Erro ao carregar filmes:", err);
       } finally {
