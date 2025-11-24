@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, Alert } from "react-native";
 import { getMovieDetails, getMovieWatchProviders } from "../lib/tmdb";
 
 export default function MoviePage({ route }) {
@@ -8,15 +8,21 @@ export default function MoviePage({ route }) {
   const [providers, setProviders] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function loadMovie() {
+  async function loadMovie() {
+    try {
       const movieData = await getMovieDetails(id);
       const providersData = await getMovieWatchProviders(id);
+
       setMovie(movieData);
       setProviders(providersData);
+    } catch (err) {
+      Alert.alert("Erro", "Não foi possível carregar os dados do filme.");
+    } finally {
       setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadMovie();
   }, [id]);
 
@@ -39,20 +45,27 @@ export default function MoviePage({ route }) {
   return (
     <ScrollView style={styles.container}>
       <Image
-        source={{ uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}` }}
+        source={{
+          uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        }}
         style={styles.poster}
       />
+
       <Text style={styles.title}>{movie.title}</Text>
       <Text style={styles.overview}>{movie.overview}</Text>
       <Text>⭐ {movie.vote_average}</Text>
 
-      {providers?.flatrate ? (
+      {/* ONDE ASSISTIR */}
+      {providers?.flatrate?.length ? (
         <View style={styles.providers}>
           <Text style={styles.subTitle}>Onde assistir:</Text>
+
           {providers.flatrate.map((provider) => (
             <View key={provider.provider_id} style={styles.provider}>
               <Image
-                source={{ uri: `https://image.tmdb.org/t/p/original${provider.logo_path}` }}
+                source={{
+                  uri: `https://image.tmdb.org/t/p/original${provider.logo_path}`,
+                }}
                 style={styles.providerLogo}
               />
               <Text>{provider.provider_name}</Text>
@@ -63,6 +76,7 @@ export default function MoviePage({ route }) {
         <Text>Informação de onde assistir não disponível.</Text>
       )}
 
+      {/* TRAILER */}
       {movie.trailerKey ? (
         <View style={styles.trailer}>
           <Text style={styles.subTitle}>Trailer Oficial</Text>
@@ -83,6 +97,12 @@ const styles = StyleSheet.create({
   subTitle: { fontWeight: "bold", marginTop: 10, marginBottom: 5 },
   providers: { marginVertical: 10 },
   provider: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
-  providerLogo: { width: 30, height: 30, marginRight: 5 },
+  providerLogo: {
+    width: 30,
+    height: 30,
+    marginRight: 5,
+    backgroundColor: "#eee",
+    borderRadius: 4,
+  },
   trailer: { marginTop: 10 },
 });
