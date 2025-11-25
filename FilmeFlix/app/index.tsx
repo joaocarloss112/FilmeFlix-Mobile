@@ -10,16 +10,27 @@ type Filme = {
   poster_path?: string | null;
 };
 
+// Componente auxiliar para evitar o erro de nó de texto no mapeamento
+function GenreSection({ genre, movies }: { genre: { id: number, name: string }, movies: Filme[] | undefined }) {
+    if (!movies || movies.length === 0) {
+        return null;
+    }
+    return (
+        <View>
+            <Text style={styles.sectionTitle}>{genre.name}</Text>
+            <MovieRow movies={movies} />
+        </View>
+    );
+}
+
 export default function Home() {
   const [popular, setPopular] = useState<Filme[]>([]);
   const [nowPlaying, setNowPlaying] = useState<Filme[]>([]);
   const [topRated, setTopRated] = useState<Filme[]>([]);
   const [upcoming, setUpcoming] = useState<Filme[]>([]);
   const [loading, setLoading] = useState(true);
-  // ESTADOS FALTANTES ADICIONADOS AQUI 👇
-  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
-  const [genreMovies, setGenreMovies] = useState<Record<number, Filme[]>>({});
-  // FIM DOS ESTADOS FALTANTES
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [genreMovies, setGenreMovies] = useState<Record<number, Filme[]>>({});
 
   useEffect(() => {
     async function load() {
@@ -37,10 +48,10 @@ export default function Home() {
         setTopRated(top || []);
         setUpcoming(up || []);
         
-        const allGenres = await getGenres();
-        setGenres(allGenres || []); // 🎉 Agora definido!
+        const allGenres = await getGenres();
+        setGenres(allGenres || []); 
         
-        const preferred = [
+        const preferred = [
           ["ação", "action"],
           ["comédia", "comedy"],
           ["ficção científica", "science fiction", "sci-fi", "science_fiction"],
@@ -85,7 +96,7 @@ export default function Home() {
         const mapping: Record<number, Filme[]> = {};
         genreResults.forEach((r) => (mapping[r.id] = r.movies || []));
         
-        setGenreMovies(mapping); // 🎉 Agora definido!
+        setGenreMovies(mapping); 
       } catch (err) {
         console.error("Erro ao carregar filmes:", err);
       } finally {
@@ -104,56 +115,68 @@ export default function Home() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.titulo}>Filmes Populares</Text>
+    // Envolvemos tudo em uma View para garantir que a ScrollView só tem 1 filho no topo
+    <View style={styles.fullScreenContainer}> 
+        <ScrollView style={styles.container}>
+            <Text style={styles.titulo}>Filmes Populares</Text>
 
-      {/* Destaque principal */}
-      {popular.length > 0 && (
-        <MovieCard movie={popular[0]} />
-      )}
+            {/* Destaque principal */}
+            {popular.length > 0 && (
+                <MovieCard movie={popular[0]} />
+            )}
 
-      <Text style={styles.sectionTitle}>Popular</Text>
-      <MovieRow movies={popular} />
+            <Text style={styles.sectionTitle}>Popular</Text>
+            <MovieRow movies={popular} />
 
-      <Text style={styles.sectionTitle}>Em exibição</Text>
-      <MovieRow movies={nowPlaying} />
+            <Text style={styles.sectionTitle}>Em exibição</Text>
+            <MovieRow movies={nowPlaying} />
 
-      <Text style={styles.sectionTitle}>Mais bem avaliados</Text>
-      <MovieRow movies={topRated} />
+            <Text style={styles.sectionTitle}>Mais bem avaliados</Text>
+            <MovieRow movies={topRated} />
 
-      <Text style={styles.sectionTitle}>Próximos lançamentos</Text>
-      <MovieRow movies={upcoming} />
-      {genres.map((g) =>
-        genreMovies[g.id] && genreMovies[g.id].length > 0 ? (
-          <View key={g.id}>
-            <Text style={styles.sectionTitle}>{g.name}</Text>
-            <MovieRow movies={genreMovies[g.id]} />
-          </View>
-        ) : null
-      )}
-    </ScrollView>
+            <Text style={styles.sectionTitle}>Próximos lançamentos</Text>
+            <MovieRow movies={upcoming} />
+            
+            {/* Usamos o componente auxiliar para renderizar os gêneros */}
+            {genres.map((g) => (
+                <GenreSection 
+                    key={g.id} 
+                    genre={g} 
+                    movies={genreMovies[g.id]} 
+                />
+            ))}
+        </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#111" },
-  loading: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#000",
-  },
-  titulo: {
-    color: "#fff",
-    fontSize: 26,
-    marginBottom: 20,
-    fontWeight: "bold",
-  },
-  sectionTitle: {
-    color: "#fff",
-    fontSize: 20,
-    marginTop: 16,
-    marginBottom: 8,
-    fontWeight: "600",
-  },
+    fullScreenContainer: {
+        flex: 1, // Garante que a View ocupe toda a tela para o scroll
+        backgroundColor: "#111", 
+    },
+    container: { 
+        paddingHorizontal: 20, // Adicionei padding horizontal
+        paddingVertical: 10,
+    },
+    loading: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#000",
+    },
+    titulo: {
+        color: "#fff",
+        fontSize: 26,
+        marginBottom: 20,
+        fontWeight: "bold",
+        marginTop: 10, // Pequena margem para não colar no Navbar
+    },
+    sectionTitle: {
+        color: "#fff",
+        fontSize: 20,
+        marginTop: 16,
+        marginBottom: 8,
+        fontWeight: "600",
+    },
 });

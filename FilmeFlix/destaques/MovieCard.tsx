@@ -2,11 +2,11 @@ import {
     View, 
     Text, 
     Image, 
-    Pressable, // Mantemos o Pressable
+    Pressable, 
     ViewStyle, 
     StyleSheet, 
 } from "react-native";
-import { useRouter } from "expo-router"; //  Importar o roteador
+import { useRouter } from "expo-router";
 
 type Movie = {
   id: number;
@@ -20,7 +20,6 @@ interface MovieCardProps {
 }
 
 export default function MovieCard({ movie, style }: MovieCardProps) {
-    // Inicializar o roteador
     const router = useRouter(); 
 
   if (!movie) return null;
@@ -29,7 +28,6 @@ export default function MovieCard({ movie, style }: MovieCardProps) {
     ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
     : undefined;
 
-    // Função de navegação
     const navigateToMovie = () => {
         if (movie?.id) {
             router.push(`/movie/${movie.id}` as any);
@@ -38,9 +36,9 @@ export default function MovieCard({ movie, style }: MovieCardProps) {
 
   return (
     <View
-        style={[styles.cardContainer, style]} // Aplica estilos
+        style={[styles.cardContainer, style]}
     >
-        {/* Usamos Pressable com onPress direto, sem o Link e asChild */}
+        {/* Usamos Pressable com onPress direto para navegar */}
         <Pressable style={styles.touchableArea} onPress={navigateToMovie}>
           {posterUri ? (
             <Image
@@ -66,33 +64,10 @@ export default function MovieCard({ movie, style }: MovieCardProps) {
 }
 
 const styles = StyleSheet.create({
-    cardContainer: {
-        width: 140,
-        marginRight: 12,
-    },
-    touchableArea: {
-        // Estilos para o Pressable (se necessário)
-    },
-    posterImage: {
-        width: 140,
-        height: 210,
-        borderRadius: 12,
-    },
-    noImagePlaceholder: {
-        width: 140,
-        height: 210,
-        borderRadius: 12,
-        backgroundColor: "#333",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    placeholderText: {
-        color: "#fff",
-    },
-    movieTitle: {
-        marginTop: 6,
-        fontSize: 14,
-        fontWeight: "bold",
-        color: "#fff",
-    }
+    cardContainer: { width: 140, marginRight: 12 },
+    touchableArea: {},
+    posterImage: { width: 140, height: 210, borderRadius: 12 },
+    noImagePlaceholder: { width: 140, height: 210, borderRadius: 12, backgroundColor: "#333", justifyContent: "center", alignItems: "center" },
+    placeholderText: { color: "#fff" },
+    movieTitle: { marginTop: 6, fontSize: 14, fontWeight: "bold", color: "#fff" }
 });
