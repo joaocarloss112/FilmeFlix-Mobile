@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import { View, Text, TextInput, Pressable, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { getCurrentUser, logout } from "../lib/auth";
 
 export default function Navbar() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+
+  const isMobile = width < 600;
 
   const [user, setUser] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,8 +28,8 @@ export default function Navbar() {
 
   function handleSearch() {
     if (!searchTerm.trim()) return;
-    router.push({ pathname: "pesquisa", params: { query: searchTerm } } as any);
 
+    router.push({ pathname: "pesquisa", params: { query: searchTerm } } as any);
     setSearchTerm("");
   }
 
@@ -34,54 +37,39 @@ export default function Navbar() {
     <View
       style={{
         width: "100%",
-        padding: 16,
+        paddingVertical: 16,
+        paddingHorizontal: 20,
         backgroundColor: "#111",
-        flexDirection: "row",
-        justifyContent: "space-between",
         alignItems: "center",
+        gap: 16,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-        <Text style={{ color: "#e50914", fontSize: 28, fontWeight: "bold" }}>
-          FilmeFlix
-        </Text>
-
+      <View
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Pressable onPress={() => router.push("/")}>
           <Text style={{ color: "white", fontSize: 16 }}>Home</Text>
         </Pressable>
 
-        {user && (
-          <Pressable onPress={() => router.push({ pathname: "favorites" } as any)}>
-            <Text style={{ color: "white", fontSize: 16 }}>Favoritos</Text>
-          </Pressable>
-        )}
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          backgroundColor: "#222",
-          borderRadius: 20,
-          paddingHorizontal: 12,
-          paddingVertical: 5,
-          alignItems: "center",
-        }}
-      >
-        <TextInput
-          placeholder="Buscar filmes..."
-          placeholderTextColor="#888"
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          onSubmitEditing={handleSearch}
-          style={{ color: "white", width: 150 }}
-        />
+        <Text
+          style={{
+            color: "#e50914",
+            fontSize: 28,
+            fontWeight: "bold",
+            textAlign: "center",
+            flex: 1,
+          }}
+        >
+          FilmeFlix
+        </Text>
 
-        <Pressable onPress={handleSearch}>
-          <FontAwesome name="search" size={18} color="white" />
-        </Pressable>
-      </View>
-      <View style={{ flexDirection: "row", gap: 10 }}>
         {!user ? (
-          <Pressable onPress={() => router.push({ pathname: "login" } as any)}>
+          <Pressable onPress={() => router.push("login" as any)}>
             <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
           </Pressable>
         ) : (
@@ -90,13 +78,41 @@ export default function Navbar() {
             style={{
               backgroundColor: "red",
               borderRadius: 6,
-              paddingHorizontal: 10,
+              paddingHorizontal: 12,
               paddingVertical: 6,
             }}
           >
             <Text style={{ color: "white" }}>Sair</Text>
           </Pressable>
         )}
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          backgroundColor: "#222",
+          borderRadius: 20,
+          paddingHorizontal: 12,
+          paddingVertical: 6,
+          alignItems: "center",
+          width: isMobile ? "100%" : 250,
+        }}
+      >
+        <TextInput
+          placeholder="Buscar filmes..."
+          placeholderTextColor="#888"
+          value={searchTerm}
+          onChangeText={setSearchTerm}
+          onSubmitEditing={handleSearch}
+          style={{
+            color: "white",
+            flex: 1,
+            paddingVertical: 4,
+          }}
+        />
+        <Pressable onPress={handleSearch}>
+          <FontAwesome name="search" size={18} color="white" />
+        </Pressable>
       </View>
     </View>
   );
