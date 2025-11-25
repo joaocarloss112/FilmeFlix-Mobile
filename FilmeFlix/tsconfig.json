@@ -14,6 +14,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "scr/FavoritesPage.js", "scr/MoviePage.js"  ]
+    "expo-env.d.ts", // <-- Vírgula adicionada aqui
+    "scr/FavoritesPage.js", 
+    "scr/MoviePage.js"  // <-- Vírgula removida daqui
+  ]
 }
