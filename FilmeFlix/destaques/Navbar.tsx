@@ -55,6 +55,11 @@ export default function Navbar() {
         <Pressable onPress={() => router.push("/")}>
           <Text style={{ color: "white", fontSize: 16 }}>Home</Text>
         </Pressable>
+        
+        <Pressable onPress={() => router.push("/sobre")}>
+          <Text style={{ color: "white", fontSize: 16 }}>Sobre</Text>
+        </Pressable>
+
 
         <Text
           style={{
