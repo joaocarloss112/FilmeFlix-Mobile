@@ -3,13 +3,14 @@ import { View, Text, TextInput, Pressable, useWindowDimensions } from "react-nat
 import { useRouter } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import { getCurrentUser, logout } from "../lib/auth";
+import { useStore } from "../lib/store";
 
 export default function Navbar() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-
   const isMobile = width < 600;
 
+  const { user: storeUser } = useStore(); // pega usuário da store
   const [user, setUser] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -28,7 +29,6 @@ export default function Navbar() {
 
   function handleSearch() {
     if (!searchTerm.trim()) return;
-
     router.push({ pathname: "pesquisa", params: { query: searchTerm } } as any);
     setSearchTerm("");
   }
@@ -68,21 +68,35 @@ export default function Navbar() {
           FilmeFlix
         </Text>
 
-        {!user ? (
+        {storeUser ? (
+          <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+            <Pressable
+              onPress={() => router.push("/favoritos")}
+              style={{
+                backgroundColor: "#E50914",
+                borderRadius: 6,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={{ color: "#fff" }}>Favoritos</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={handleLogout}
+              style={{
+                backgroundColor: "red",
+                borderRadius: 6,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text style={{ color: "white" }}>Sair</Text>
+            </Pressable>
+          </View>
+        ) : (
           <Pressable onPress={() => router.push("login" as any)}>
             <Text style={{ color: "white", fontSize: 16 }}>Login</Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={handleLogout}
-            style={{
-              backgroundColor: "red",
-              borderRadius: 6,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-            }}
-          >
-            <Text style={{ color: "white" }}>Sair</Text>
           </Pressable>
         )}
       </View>
