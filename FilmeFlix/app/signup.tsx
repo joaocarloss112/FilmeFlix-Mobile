@@ -1,35 +1,28 @@
 import { useState } from "react";
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    Pressable, 
-    StyleSheet, 
-    ActivityIndicator,
-    Alert 
-} from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { register } from "../lib/auth"; 
+import { useUser } from "../lib/useUser";
 
 export default function SignupScreen() {
     const router = useRouter();
+    const { setUser } = useUser(); // ✅ atualiza estado global
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
 
     async function handleRegister() {
         if (!username || !password) {
-            Alert.alert("Erro", "Por favor, preencha todos os campos (Usuário e Senha).");
+            Alert.alert("Erro", "Preencha todos os campos.");
             return;
         }
 
         setLoading(true);
         try {
-            await register(username, password);
-            
+            const data = await register(username, password);
+            setUser({ username: data.username }); // ✅ atualiza estado
             Alert.alert("Sucesso", "Cadastro realizado! Redirecionando para a tela inicial.");
             router.replace("/"); 
-
         } catch (err: any) {
             Alert.alert("Erro no Cadastro", err.message || "Não foi possível realizar o cadastro.");
             console.error("Erro no cadastro:", err);
@@ -41,7 +34,6 @@ export default function SignupScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Criar uma Conta</Text>
-
             <TextInput
                 style={styles.input}
                 placeholder="Nome de Usuário"
@@ -58,25 +50,20 @@ export default function SignupScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
             />
-
             <Pressable
                 onPress={handleRegister}
                 disabled={loading}
                 style={[styles.button, loading && styles.buttonDisabled]}
             >
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.buttonText}>Cadastrar</Text>
-                )}
+                {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Cadastrar</Text>}
             </Pressable>
-            
             <Pressable onPress={() => router.push("login" as any)} style={styles.link}>
                 <Text style={styles.linkText}>Já tem conta? Fazer Login</Text>
             </Pressable>
         </View>
     );
 }
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000", padding: 20 },

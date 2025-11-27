@@ -1,5 +1,5 @@
-const APP_ID = "ZRaPhbDGJ3m9yA78aqtVGshARrISzBic1YovWuPM";
-const REST_KEY = "mAcYVexyu2Y7vj1mI758Zp6IUkQoYOYumPcd0Akk";
+const APP_ID = "ha8qd3C5W7jjbOdzktxvcYeH0sosRMgNDJX5N49e";
+const JS_KEY = "1jVzP10vO724fUOj1kWbYVX2BVStENxiEcPwCRqi";
 
 const BASE = "https://parseapi.back4app.com";
 
@@ -7,7 +7,7 @@ export async function parseGet(path: string) {
   const res = await fetch(`${BASE}/${path}`, {
     headers: {
       "X-Parse-Application-Id": APP_ID,
-      "X-Parse-REST-API-Key": REST_KEY,
+      "X-Parse-JavaScript-Key": JS_KEY, // << CORREÇÃO
       "Content-Type": "application/json",
     },
   });
@@ -19,7 +19,7 @@ export async function parsePost(path: string, body: any) {
     method: "POST",
     headers: {
       "X-Parse-Application-Id": APP_ID,
-      "X-Parse-REST-API-Key": REST_KEY,
+      "X-Parse-JavaScript-Key": JS_KEY, // << CORREÇÃO
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
@@ -33,7 +33,7 @@ export async function parsePut(path: string, body: any) {
     method: "PUT",
     headers: {
       "X-Parse-Application-Id": APP_ID,
-      "X-Parse-REST-API-Key": REST_KEY,
+      "X-Parse-JavaScript-Key": JS_KEY, // << CORREÇÃO
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),

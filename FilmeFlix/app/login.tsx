@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    Pressable, 
-    StyleSheet, 
-    ActivityIndicator,
-    Alert 
-} from "react-native";
+import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { login } from "../lib/auth"; 
+import { useUser } from "../lib/useUser";
 
 export default function LoginScreen() {
     const router = useRouter();
+    const { setUser } = useUser(); // ✅ pegando função para atualizar usuário
     const [username, setUsername] = useState(""); 
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -25,7 +19,8 @@ export default function LoginScreen() {
 
         setLoading(true);
         try {
-            await login(username, password); 
+            const data = await login(username, password); 
+            setUser({ username: data.username }); // ✅ atualiza estado global do usuário
             router.replace("/"); 
         } catch (err: any) {
             Alert.alert("Erro de Login", err.message || "Credenciais inválidas. Tente novamente.");
@@ -74,6 +69,8 @@ export default function LoginScreen() {
         </View>
     );
 }
+
+
 
 const styles = StyleSheet.create({
     container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000", padding: 20 },

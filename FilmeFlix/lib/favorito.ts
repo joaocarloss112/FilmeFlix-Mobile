@@ -1,47 +1,40 @@
-import Parse from "/parse";
+// lib/favoritos.ts
+import { parseGet, parsePost, parsePut } from "../lib/parse"; // ../lib/ para subir um nível
+
 
 export interface FavoriteMovie {
   id: number;
   title: string;
   posterPath?: string;
 }
-export async function saveFavorite(movie: FavoriteMovie) {
+
+// Salvar favorito
+export async function saveFavorite(movie: FavoriteMovie, userId: string) {
   try {
-    const user = Parse.User.current();
-    if (!user) return false;
-
-    const FavoriteClass = Parse.Object.extend("Favorite");
-    const favorite = new FavoriteClass();
-
-    favorite.set("movieId", movie.id);
-    favorite.set("title", movie.title);
-    favorite.set("posterPath", movie.posterPath || "");
-    favorite.set("user", user);
-
-    await favorite.save();
-
-    return true;
+    const res = await parsePost("classes/Favorite", {
+      movieId: movie.id,
+      title: movie.title,
+      posterPath: movie.posterPath || "",
+      userId, // associando ao usuário
+    });
+    return !!res.objectId;
   } catch (err) {
     console.error("Erro ao salvar favorito:", err);
     return false;
   }
 }
 
-export async function getFavorites(): Promise<FavoriteMovie[]> {
+// Buscar favoritos do usuário
+export async function getFavorites(userId: string): Promise<FavoriteMovie[]> {
   try {
-    const user = Parse.User.current();
-    if (!user) return [];
+    // Parse REST API: filtro por userId
+    const res: any = await parseGet(`classes/Favorite?where=${encodeURIComponent(JSON.stringify({ userId }))}`);
+    if (!res.results) return [];
 
-    const query = new Parse.Query("Favorite");
-    query.equalTo("user", user);
-    query.limit(1000);
-
-    const results = await query.find();
-
-    return results.map((fav: any) => ({
-      id: fav.get("movieId"),
-      title: fav.get("title"),
-      posterPath: fav.get("posterPath"),
+    return res.results.map((fav: any) => ({
+      id: fav.movieId,
+      title: fav.title,
+      posterPath: fav.posterPath,
     }));
   } catch (err) {
     console.error("Erro ao carregar favoritos:", err);
@@ -49,20 +42,15 @@ export async function getFavorites(): Promise<FavoriteMovie[]> {
   }
 }
 
-export async function removeFavorite(movieId: number) {
+// Remover favorito
+export async function removeFavorite(movieId: number, userId: string) {
   try {
-    const user = Parse.User.current();
-    if (!user) return false;
+    // Buscar o objeto para deletar
+    const res: any = await parseGet(`classes/Favorite?where=${encodeURIComponent(JSON.stringify({ movieId, userId }))}`);
+    if (!res.results || res.results.length === 0) return false;
 
-    const query = new Parse.Query("Favorite");
-    query.equalTo("movieId", movieId);
-    query.equalTo("user", user);
-
-    const results = await query.find();
-
-    if (results.length === 0) return false;
-
-    await Parse.Object.destroyAll(results);
+    const objectId = res.results[0].objectId;
+    await parsePut(`classes/Favorite/${objectId}`, {}); // ou parseDelete se implementar
     return true;
   } catch (err) {
     console.error("Erro ao remover favorito:", err);
