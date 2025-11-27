@@ -6,61 +6,79 @@ import {
   Pressable,
   TextInput,
   Alert,
-  StyleSheet,
   ScrollView,
 } from "react-native";
 import { useStore, FavoriteMovie } from "../lib/store";
 import { getFavorites, removeFavorite } from "../lib/favoritos";
 import MovieCard from "../destaques/MovieCard";
-
-interface Playlist {
-  name: string;
-  movies: FavoriteMovie[];
-}
+import {
+  createPlaylist,
+  getPlaylists,
+  addMovieToPlaylist,
+  Playlist as BackendPlaylist,
+} from "../lib/playlists";
 
 export default function FavoritosPage() {
   const { user, favorites, setFavorites } = useStore();
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [playlists, setPlaylists] = useState<BackendPlaylist[]>([]);
   const [playlistName, setPlaylistName] = useState("");
 
+  // Carregar favoritos e playlists do backend
   useEffect(() => {
     if (user) {
       getFavorites(user.objectId).then(setFavorites);
+      getPlaylists(user.objectId).then(setPlaylists);
     }
   }, [user]);
 
   if (!user)
     return <Text style={{ color: "#fff", padding: 20 }}>Faça login para ver seus favoritos</Text>;
 
+  // Remover filme dos favoritos
   async function handleRemove(movieId: number) {
     if (!user) return;
     const removed = await removeFavorite(movieId, user.objectId);
     if (removed) setFavorites(favorites.filter(f => f.id !== movieId));
   }
 
-  function handleCreatePlaylist() {
+  // Criar nova playlist no backend
+  async function handleCreatePlaylist() {
     const name = playlistName.trim();
-    if (!name) {
-      Alert.alert("Nome inválido", "Digite um nome para a playlist.");
-      return;
-    }
+    if (!name) return Alert.alert("Nome inválido", "Digite um nome para a playlist.");
+    if (!user) return;
+
+    // Evita playlists duplicadas localmente
     if (playlists.some(p => p.name === name)) {
       Alert.alert("Nome duplicado", "Já existe uma playlist com esse nome.");
       return;
     }
-    setPlaylists([{ name, movies: [] }, ...playlists]); // cria playlist vazia no topo
+
+    const newPlaylist = await createPlaylist(user.objectId, name);
+    if (newPlaylist) setPlaylists([newPlaylist, ...playlists]);
     setPlaylistName("");
   }
 
-  function handleAddToPlaylist(playlistIndex: number, movie: FavoriteMovie) {
-    const updated = [...playlists];
-    const exists = updated[playlistIndex].movies.some(m => m.id === movie.id);
-    if (exists) {
+  // Adicionar filme a uma playlist existente
+  async function handleAddToPlaylist(playlistId: string, movie: FavoriteMovie) {
+    if (!user) return;
+
+    const playlist = playlists.find(p => p.objectId === playlistId);
+    if (!playlist) return;
+
+    // Evita duplicar filme
+    if (playlist.movies.find(m => m.id === movie.id)) {
       Alert.alert("Filme já na playlist", `"${movie.title}" já está nessa playlist.`);
       return;
     }
-    updated[playlistIndex].movies.push({ ...movie }); // cria cópia
-    setPlaylists(updated);
+
+    const success = await addMovieToPlaylist(playlistId, movie);
+    if (success) {
+      setPlaylists(playlists.map(p =>
+        p.objectId === playlistId
+          ? { ...p, movies: [...p.movies, movie] }
+          : p
+      ));
+    }
   }
 
   return (
@@ -99,8 +117,8 @@ export default function FavoritosPage() {
 
       {/* Mostrar Playlists */}
       {playlists.length > 0 &&
-        playlists.map((p, idx) => (
-          <View key={idx} style={{ marginBottom: 20 }}>
+        playlists.map((p) => (
+          <View key={p.objectId} style={{ marginBottom: 20 }}>
             <Text style={{ color: "#fff", fontWeight: "bold", marginBottom: 6 }}>
               {p.name}
             </Text>
@@ -155,10 +173,10 @@ export default function FavoritosPage() {
             {/* Botões para adicionar a playlists */}
             {playlists.length > 0 && (
               <View style={{ marginTop: 6 }}>
-                {playlists.map((p, idx) => (
+                {playlists.map((p) => (
                   <Pressable
-                    key={idx}
-                    onPress={() => handleAddToPlaylist(idx, item)}
+                    key={p.objectId}
+                    onPress={() => handleAddToPlaylist(p.objectId!, item)}
                     style={{
                       backgroundColor: "#444",
                       paddingVertical: 4,
