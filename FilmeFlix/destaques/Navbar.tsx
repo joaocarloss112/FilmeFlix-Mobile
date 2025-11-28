@@ -74,9 +74,8 @@ export default function Navbar() {
 
   return (
     <View style={styles.navbar}>
-      {/* Linha superior */}
-      <View style={styles.rowBetween}>
-        {/* LOGO Netflix Style */}
+      {/* Logo em cima */}
+      <View style={styles.logoRow}>
         <Pressable onPress={handleLogoPress} style={styles.logoWrapper}>
           <Text style={styles.logo}>FilmeFlix</Text>
 
@@ -97,13 +96,15 @@ export default function Navbar() {
             />
           )}
         </Pressable>
+      </View>
 
-        {/* Links de navegação */}
+      {/* Links abaixo do logo e ações à direita */}
+      <View style={styles.linksRow}>
         <View style={styles.navLinksContainer}>
           <Pressable onPress={() => router.push("/")} style={styles.navLinkButton}>
             <Text style={styles.navLink}>Início</Text>
           </Pressable>
-          
+
           {storeUser && (
             <Pressable onPress={() => router.push("/favoritos")} style={styles.navLinkButton}>
               <Text style={styles.navLink}>Meus Favoritos</Text>
@@ -115,7 +116,6 @@ export default function Navbar() {
           </Pressable>
         </View>
 
-        {/* Ações do usuário */}
         <View style={styles.actionContainer}>
           {storeUser ? (
             <>
@@ -293,5 +293,21 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     backgroundColor: "rgba(229,9,20,0.25)",
+  },
+  logoRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  linksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  navLinksContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 20,
+    alignItems: 'center',
   },
 });
