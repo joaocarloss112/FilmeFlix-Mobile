@@ -119,9 +119,9 @@ export default function Navbar() {
         <View style={styles.actionContainer}>
           {storeUser ? (
             <>
-              <View style={styles.userBadge}>
+              <Pressable onPress={() => router.push('/perfil')} style={styles.userBadge}>
                 <Text style={styles.userBadgeText}>{storeUser.username?.charAt(0).toUpperCase() || "U"}</Text>
-              </View>
+              </Pressable>
               <Pressable onPress={handleLogout} style={styles.logoutButton}>
                 <FontAwesome name="sign-out" size={18} color="#fff" />
               </Pressable>
