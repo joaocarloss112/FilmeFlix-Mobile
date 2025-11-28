@@ -16,8 +16,10 @@ import {
   createPlaylist,
   getPlaylists,
   addMovieToPlaylist,
+  removePlaylist,
   Playlist as BackendPlaylist,
 } from "../lib/playlists";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
 
 export default function FavoritosPage() {
@@ -151,7 +153,30 @@ export default function FavoritosPage() {
 
       {/* Mostrar playlists */}
       {playlists.map((p) => (
-  <View key={p.objectId} style={{ marginBottom: 20 }}>
+  <View key={p.objectId} style={{ marginBottom: 20, position: 'relative', paddingTop: 6 }}>
+    <Pressable
+      onPress={() => {
+        Alert.alert("Remover playlist", `Remover a playlist \"${p.name}\"?`, [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Remover",
+            style: "destructive",
+            onPress: async () => {
+              if (!user || !p.objectId) return;
+              const removed = await removePlaylist(p.objectId);
+              if (removed) {
+                setPlaylists(playlists.filter(pl => pl.objectId !== p.objectId));
+              } else {
+                Alert.alert("Erro", "Não foi possível remover a playlist. Tente novamente mais tarde.");
+              }
+            },
+          },
+        ]);
+      }}
+      style={{ position: 'absolute', top: 0, right: 0, padding: 6, zIndex: 10 }}
+    >
+      <IconSymbol name="trash" color="#fff" size={18} />
+    </Pressable>
     <Text style={{ color: "#fff", fontWeight: "bold", marginBottom: 6 }}>{p.name}</Text>
 
     {p.movies.length === 0 ? (
