@@ -21,6 +21,7 @@ export default function Navbar() {
 
   const [user, setUser] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchActive, setSearchActive] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -39,60 +40,80 @@ export default function Navbar() {
     if (!searchTerm.trim()) return;
     router.push({ pathname: "pesquisa", params: { query: searchTerm } } as any);
     setSearchTerm("");
+    setSearchActive(false);
   }
 
   return (
     <View style={styles.navbar}>
       {/* Linha superior */}
       <View style={styles.rowBetween}>
-        {/* Página Home */}
+        {/* LOGO Netflix Style */}
         <Pressable onPress={() => router.push("/")}>
-          <Text style={styles.navLink}>Home</Text>
+          <Text style={styles.logo}>FilmeFlix</Text>
         </Pressable>
 
-        {/* LOGO Netflix Style */}
-        <Text style={styles.logo}>FilmeFlix</Text>
-
-        {/* Botões */}
-        {storeUser ? (
-          <View style={styles.rowGap}>
-            <Pressable
-              onPress={() => router.push("/favoritos")}
-              style={styles.buttonPrimary}
-            >
-              <Text style={styles.buttonPrimaryText}>Favoritos</Text>
-            </Pressable>
-
-            <Pressable onPress={handleLogout} style={styles.buttonDanger}>
-              <Text style={styles.buttonPrimaryText}>Sair</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <Pressable onPress={() => router.push("login" as any)}>
-            <Text style={styles.navLink}>Login</Text>
+        {/* Links de navegação */}
+        <View style={styles.navLinksContainer}>
+          <Pressable onPress={() => router.push("/")} style={styles.navLinkButton}>
+            <Text style={styles.navLink}>Início</Text>
           </Pressable>
-        )}
+          
+          {storeUser && (
+            <Pressable onPress={() => router.push("/favoritos")} style={styles.navLinkButton}>
+              <Text style={styles.navLink}>Meus Favoritos</Text>
+            </Pressable>
+          )}
+
+          <Pressable onPress={() => router.push("/sobre")} style={styles.navLinkButton}>
+            <Text style={styles.navLink}>Sobre</Text>
+          </Pressable>
+        </View>
+
+        {/* Ações do usuário */}
+        <View style={styles.actionContainer}>
+          {storeUser ? (
+            <>
+              <View style={styles.userBadge}>
+                <Text style={styles.userBadgeText}>{storeUser.username?.charAt(0).toUpperCase() || "U"}</Text>
+              </View>
+              <Pressable onPress={handleLogout} style={styles.logoutButton}>
+                <FontAwesome name="sign-out" size={18} color="#fff" />
+              </Pressable>
+            </>
+          ) : (
+            <Pressable onPress={() => router.push("login" as any)} style={styles.loginButton}>
+              <Text style={styles.loginButtonText}>Entrar</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {/* Campo de Busca */}
-      <View
-        style={[
-          styles.searchWrapper,
-          { width: isMobile ? "100%" : 260 },
-        ]}
-      >
-        <TextInput
-          placeholder="Buscar filmes..."
-          placeholderTextColor="#888"
-          value={searchTerm}
-          onChangeText={setSearchTerm}
-          onSubmitEditing={handleSearch}
-          style={styles.searchInput}
-        />
-
-        <Pressable onPress={handleSearch}>
-          <FontAwesome name="search" size={18} color="white" />
-        </Pressable>
+      <View style={styles.searchContainer}>
+        <View
+          style={[
+            styles.searchWrapper,
+            searchActive && styles.searchWrapperActive,
+            { width: isMobile ? "100%" : 280 },
+          ]}
+        >
+          <FontAwesome name="search" size={16} color="#aaa" style={styles.searchIcon} />
+          <TextInput
+            placeholder="Buscar filmes..."
+            placeholderTextColor="#666"
+            value={searchTerm}
+            onChangeText={setSearchTerm}
+            onFocus={() => setSearchActive(true)}
+            onBlur={() => setSearchActive(false)}
+            onSubmitEditing={handleSearch}
+            style={styles.searchInput}
+          />
+          {searchTerm.length > 0 && (
+            <Pressable onPress={() => setSearchTerm("")}>
+              <FontAwesome name="times" size={16} color="#aaa" />
+            </Pressable>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -101,12 +122,12 @@ export default function Navbar() {
 const styles = StyleSheet.create({
   navbar: {
     width: "100%",
-    paddingTop: 18,
+    paddingTop: 14,
     paddingBottom: 12,
     paddingHorizontal: 20,
-    backgroundColor: "#0D0D0D",
+    backgroundColor: "#141414",
     borderBottomWidth: 1,
-    borderBottomColor: "#222",
+    borderBottomColor: "#2a2a2a",
     gap: 14,
   },
 
@@ -116,60 +137,100 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  rowGap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+  logo: {
+    color: "#e50914",
+    fontSize: 28,
+    fontWeight: "900",
+    letterSpacing: 1.5,
   },
 
-  logo: {
-    color: "#E50914",
-    fontSize: 30,
-    fontWeight: "900",
+  navLinksContainer: {
+    flexDirection: "row",
+    gap: 32,
     flex: 1,
-    textAlign: "center",
-    letterSpacing: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  navLinkButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 6,
   },
 
   navLink: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.3,
+  },
+
+  actionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  userBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#e50914",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  userBadgeText: {
     color: "#fff",
     fontSize: 16,
-    paddingHorizontal: 6,
+    fontWeight: "700",
   },
 
-  buttonPrimary: {
-    backgroundColor: "#E50914",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+  loginButton: {
+    backgroundColor: "#e50914",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
   },
 
-  buttonDanger: {
-    backgroundColor: "#B30000",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-
-  buttonPrimaryText: {
+  loginButtonText: {
     color: "#fff",
     fontSize: 14,
     fontWeight: "600",
+    letterSpacing: 0.3,
+  },
+
+  logoutButton: {
+    padding: 8,
+  },
+
+  searchContainer: {
+    justifyContent: "center",
   },
 
   searchWrapper: {
     flexDirection: "row",
-    backgroundColor: "#1A1A1A",
-    borderRadius: 20,
+    backgroundColor: "#2a2a2a",
+    borderRadius: 4,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#2a2a2a",
+  },
+
+  searchWrapperActive: {
+    borderColor: "#e50914",
+    backgroundColor: "#1f1f1f",
+  },
+
+  searchIcon: {
+    marginRight: 10,
   },
 
   searchInput: {
     flex: 1,
-    color: "white",
+    color: "#ffffff",
     fontSize: 14,
-    paddingVertical: 4,
+    fontWeight: "500",
   },
 });
