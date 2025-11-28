@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Pressable,
   StyleSheet,
   useWindowDimensions,
+  Animated,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -22,6 +23,11 @@ export default function Navbar() {
   const [user, setUser] = useState<any | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchActive, setSearchActive] = useState(false);
+
+  // Glow wave animation refs
+  const waveScale = useRef(new Animated.Value(0)).current;
+  const waveOpacity = useRef(new Animated.Value(0)).current;
+  const [showWave, setShowWave] = useState(false);
 
   useEffect(() => {
     async function loadUser() {
@@ -43,13 +49,53 @@ export default function Navbar() {
     setSearchActive(false);
   }
 
+  function handleLogoPress() {
+    // Ao clicar no logo, executa efeito wave ao inves de navegar
+    setShowWave(true);
+    waveScale.setValue(0);
+    waveOpacity.setValue(0.6);
+
+    Animated.parallel([
+      Animated.timing(waveScale, {
+        toValue: 1,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+      Animated.timing(waveOpacity, {
+        toValue: 0,
+        duration: 700,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // esconder após animação
+      setTimeout(() => setShowWave(false), 80);
+    });
+  }
+
   return (
     <View style={styles.navbar}>
       {/* Linha superior */}
       <View style={styles.rowBetween}>
         {/* LOGO Netflix Style */}
-        <Pressable onPress={() => router.push("/")}>
+        <Pressable onPress={handleLogoPress} style={styles.logoWrapper}>
           <Text style={styles.logo}>FilmeFlix</Text>
+
+          {showWave && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.wave,
+                {
+                  opacity: waveOpacity,
+                  transform: [
+                    {
+                      scale: waveScale.interpolate({ inputRange: [0, 1], outputRange: [0.2, 6] }),
+                    },
+                  ],
+                },
+              ]}
+            />
+          )}
         </Pressable>
 
         {/* Links de navegação */}
@@ -232,5 +278,20 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontSize: 14,
     fontWeight: "500",
+  },
+  logoWrapper: {
+    // ensure we can overlay the wave centered on the logo
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+  },
+
+  wave: {
+    position: "absolute",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(229,9,20,0.25)",
   },
 });
