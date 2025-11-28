@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, StyleSheet, Image } from "react-native";
+import { ScrollView, View, Text, StyleSheet, Image, Pressable, Linking } from "react-native";
 
 export default function Sobre() {
   return (
@@ -17,9 +17,58 @@ export default function Sobre() {
       </Text>
 
       <Text style={styles.texto}>
-        Este projeto foi criado por Juliana Tenorio para a disciplina de
-        Desenvolvimento Mobile, utilizando React Native + Expo Router.
+        Este projeto foi desenvolvido por uma equipe de estudantes na
+        disciplina de Desenvolvimento Mobile, utilizando React Native + Expo Router.
       </Text>
+
+      <Text style={styles.subtitulo}>Destaques</Text>
+      <Text style={styles.texto}>Conheça alguns responsáveis pelo projeto:</Text>
+
+      <View style={styles.profilesRow}>
+        <Pressable
+          style={styles.personContainer}
+          onPress={() => Linking.openURL('https://github.com/julianacot')}
+        >
+          <Image
+            source={{ uri: 'https://github.com/julianacot.png' }}
+            style={styles.avatar}
+          />
+          <Text style={styles.personName}>Juliana Tenorio</Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.personContainer}
+          onPress={() => Linking.openURL('https://github.com/rickzerahh')}
+        >
+          <Image
+            source={{ uri: 'https://github.com/rickzerahh.png' }}
+            style={styles.avatar}
+          />
+          <Text style={styles.personName}>Ricardo André</Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.personContainer}
+          onPress={() => Linking.openURL('https://github.com/joaocarloss112')}
+        >
+          <Image
+            source={{ uri: 'https://github.com/joaocarloss112.png' }}
+            style={styles.avatar}
+          />
+          <Text style={styles.personName}>João Carlos</Text>
+        </Pressable>
+
+        <Pressable
+          style={styles.personContainer}
+          onPress={() => Linking.openURL('https://github.com/Igor2427')}
+        >
+          <Image
+            source={{ uri: 'https://github.com/Igor2427.png' }}
+            style={styles.avatar}
+          />
+          <Text style={styles.personName}>Igor Gabriel</Text>
+        </Pressable>
+      </View>
 
       <Text style={styles.subtitulo}>Tecnologias usadas:</Text>
       <Text style={styles.texto}>• React Native</Text>
@@ -57,5 +106,30 @@ const styles = StyleSheet.create({
     height: 120,
     alignSelf: "center",
     marginBottom: 20,
+  },
+  profilesRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    marginTop: 10,
+  },
+  personContainer: {
+    width: "48%",
+    alignItems: "center",
+    marginBottom: 16,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    marginBottom: 8,
+  },
+  personName: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });
