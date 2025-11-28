@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator, StyleSheet, ImageBackground, TouchableOpacity } from "react-native";
 import MovieRow from "../destaques/MovieRow";
 import MovieCard from "../destaques/MovieCard";
 import { getMoviesByCategory, getGenres, getMoviesByGenre } from "../lib/tmdb";
@@ -138,12 +138,31 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.fullScreenContainer}>
-      <View style={{ marginBottom: 15 }}>
-        {user
-          ? <Text style={{ color: "#fff", fontSize: 18 }}>Olá, {user.username}!</Text>
-          : <Text style={{ color: "#fff", fontSize: 18 }}>Bem-vindo ao FilmeFlix!</Text>
-        }
-      </View>
+      {/* Banner principal estilo Netflix */}
+      {popular.length > 0 && (
+        <ImageBackground
+          source={{ uri: `https://image.tmdb.org/t/p/w780${popular[0].poster_path}` }}
+          style={styles.banner}
+          imageStyle={{ borderRadius: 8 }}
+        >
+          <View style={styles.bannerOverlay} />
+          <View style={styles.bannerContent}>
+            <Text style={styles.bannerTitle}>{(popular[0].title || '').toUpperCase()}</Text>
+            <Text numberOfLines={3} style={styles.bannerOverview}>
+              {(popular[0] as any).overview || ""}
+            </Text>
+
+            <View style={styles.bannerButtons}>
+              <TouchableOpacity style={styles.playButton}>
+                <Text style={styles.playButtonText}>▶ Assistir</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.listButton}>
+                <Text style={styles.listButtonText}>+ Minha Lista</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ImageBackground>
+      )}
 
       <Text style={styles.titulo}>Filmes Populares</Text>
       {popular.length > 0 && <MovieCard movie={popular[0]} />}
@@ -168,4 +187,55 @@ const styles = StyleSheet.create({
   loading: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
   titulo: { color: "#fff", fontSize: 26, marginBottom: 20, fontWeight: "bold", marginTop: 10 },
   sectionTitle: { color: "#fff", fontSize: 20, marginTop: 16, marginBottom: 8, fontWeight: "600" },
+  banner: {
+    height: 420,
+    marginBottom: 18,
+    borderRadius: 8,
+    overflow: "hidden",
+    justifyContent: "flex-end",
+  },
+  bannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  bannerContent: {
+    padding: 18,
+    paddingBottom: 26,
+  },
+  bannerTitle: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "900",
+    marginBottom: 8,
+  },
+  bannerOverview: {
+    color: "#ddd",
+    fontSize: 14,
+    marginBottom: 12,
+    maxWidth: "90%",
+  },
+  bannerButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  playButton: {
+    backgroundColor: "#fff",
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 4,
+  },
+  playButtonText: {
+    color: "#000",
+    fontWeight: "700",
+  },
+  listButton: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+  },
+  listButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
 });
