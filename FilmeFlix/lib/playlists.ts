@@ -1,4 +1,4 @@
-import { parseGet, parsePost, parsePut } from "./parse";
+import { parseGet, parsePost, parsePut, parseDelete } from "./parse";
 import { FavoriteMovie } from "./store";
 
 export interface Playlist {
@@ -50,6 +50,17 @@ export async function addMovieToPlaylist(playlistId: string, movie: FavoriteMovi
     return true;
   } catch (err) {
     console.error("Erro ao adicionar filme à playlist:", err);
+    return false;
+  }
+}
+
+// Remover playlist
+export async function removePlaylist(playlistId: string) {
+  try {
+    await parseDelete(`classes/Playlist/${playlistId}`);
+    return true;
+  } catch (err) {
+    console.error("Erro ao remover playlist:", err);
     return false;
   }
 }
